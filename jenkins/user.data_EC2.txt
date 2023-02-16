@@ -1,0 +1,16 @@
+#!/bin/bash
+sudo yum -y update
+sudo yum install wget
+wget https://dlcdn.apache.org/maven/maven-3/3.8.6/binaries/apache-maven-3.8.6-bin.tar.gz
+tar xvf apache-maven-3.8.6-bin.tar.gz
+sudo mv apache-maven-3.8.6  /usr/local/apache-maven
+
+source ~/.bashrc
+sudo rm apache-maven-3.8.6-bin.tar.gz 
+sudo amazon-linux-extras install java-openjdk11
+sudo yum install -y git
+####doesn't work#################
+####let's do it manually or rewrite script######
+export JAVA_HOME=
+export M2_HOME=/usr/local/apache-maven/bin 
+export PATH=$M2:$PATH

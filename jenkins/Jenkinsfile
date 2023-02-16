@@ -1,0 +1,64 @@
+pipeline {
+    agent { 
+        label 'linux_node'
+        }
+    options {
+        buildDiscarder logRotator( 
+                    daysToKeepStr: '3', 
+                    numToKeepStr: '3'
+            ) 
+    }
+    triggers {
+        gitlab(
+          triggerOnPush: false, 
+          triggerOnMergeRequest: true, triggerOpenMergeRequestOnPush: "never",
+          triggerOnNoteRequest: true,
+          noteRegex: "Jenkins please retry a build",
+          skipWorkInProgressMergeRequest: true,
+          ciSkip: false,
+          setBuildDescription: true,
+          addNoteOnMergeRequest: true,
+          addCiMessage: true,
+          addVoteOnMergeRequest: true,
+          acceptMergeRequestOnSuccess: true,
+          branchFilterType: "NameBasedFilter",
+          includeBranchesSpec: "main",
+          excludeBranchesSpec: "")
+    }
+
+    stages { 
+        stage('Cleanup Workspace') {
+            steps {
+                cleanWs()
+                sh """
+                echo "Cleaned Up Workspace For Project"
+                """
+            }
+        }
+        stage('Code Checkout') {
+            steps {
+                checkout scmGit(
+                    branches: [[name: '*/main']], 
+                    extensions: [], 
+                    userRemoteConfigs: [[credentialsId: 'petclinic_2', url: 'git@git.epam.com:oleksandr_klochko/spring-petclinic.git']])  
+            }
+        }
+        stage('Docker Build') {
+    	    agent any
+            steps {
+                sh 'cd /var/lib/jenkins/workspace/scripted_pipeline'    
+                sh './mvnw package'
+      	        sh 'docker build -t petclinic:v1 -t petclinic:latest .'
+            }
+        }
+        stage('Docker Push') {
+    	    agent any
+            steps {
+      	        withCredentials([usernamePassword(credentialsId: 'dockerHub', passwordVariable: 'dockerHubPassword', usernameVariable: 'dockerHubUser')]) {
+        	    sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPassword}"
+                sh 'docker push oleksandriyskiy/spring-petclinic:latest'  
+                }
+            }
+        }
+    }
+}   

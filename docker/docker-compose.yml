@@ -1,0 +1,44 @@
+services:
+  database:
+    image: ${DB_IMAGE}
+    container_name: database
+    ports:
+      - ${DB_PORT}
+    networks:
+      my-net:
+        ipv4_address: ${DB_IP}
+    volumes:
+      - ./database/script.sql:/docker-entrypoint-initdb.d/script.sql
+      - mysql_data:/var/lib/mysql
+    environment:
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_USER: ${DB_USER}
+      MARIADB_PASSWORD: ${USER_PASS}
+      MARIADB_ROOT_PASSWORD: ${ROOT_PASS}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "-uroot", "-p$ROOT_PASS", "ping", "-h", "localhost"]
+      timeout: 5s
+      retries: 10
+    restart: on-failure
+  server:
+    image: tomsik68/xampp:latest
+    container_name: server
+    ports:
+      - ${APP_PORT}:80
+    volumes:
+      - ~/php-mysql-crud:/www
+    networks:
+      my-net:
+        ipv4_address: ${APP_IP}
+    depends_on:
+      database:
+        condition: service_healthy
+    restart: on-failure
+networks:
+  my-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: ${SUBNET}
+volumes:
+  mysql_data:

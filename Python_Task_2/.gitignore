@@ -1,0 +1,4 @@
+#There are ignored objects
+.idea/
+*.log
+__pycacha__/
