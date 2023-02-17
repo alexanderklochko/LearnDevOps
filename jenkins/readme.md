@@ -60,14 +60,29 @@ It's possible by installed `Matrix Authorization Strategy Plugin`.
 ### Jenkins multibranch
 
 There were next steps:
- -Install `GitLab Branch Source` plugin. Create or use existing credentials:
-Gitlab personal access token (Gitlab API token not allowed, but it's almost
+- Install `GitLab Branch Source` and `Multibranch Scan Webhook Trigger` plugin.
+  - Create or use existing credentials:
+  - Gitlab personal access token (Gitlab API token not allowed, but it's almost
 the same thing) and SSh private key;
 - Configure GitLab Servers section in: Manage Jenkins -> Configure System;
-- New item -> Multibranch pipeline -> Branch Sources -> gitlab_project:
-  - Specify the gitlab user, credentials and choose multibranch project;
-  - 
-  -
+- New item -> Multibranch pipeline:
+    - Branch Sources:
+        - Specify gitserver, owner, credentials and project;
+        - Discover branches -> Strategy: All branched;
+        - Discover merge requests from origin: Default (Merging th merge request with
+          the current target branch version);
+        - Property strategy: All branches have the same properties;
+    - Scan GitLab Project Triggers (This section allows after installing 
+    `Multibranch Scan Webhook Trigger` plugin).
+    - Choose scan by webhook:
+        - configure webhook in Gitlab: Gitlab project -> Settings -> Webhooks ->
+          -> create webhook with the next payload: 
+          <jenkinsserverURL>/multibranch-webhook-trigger/invoke?token=<token_name>
+        - input <token_name> in Trigger token section;
+- Create Jenkinsfile for every branch, for which will be created pipeline;
+
+
+
 
 
 
