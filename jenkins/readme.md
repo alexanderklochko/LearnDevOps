@@ -59,6 +59,16 @@ It's possible by installed `Matrix Authorization Strategy Plugin`.
 
 ### Jenkins multibranch
 
+There were next steps:
+ -Install `GitLab Branch Source` plugin. Create or use existing credentials:
+Gitlab personal access token (Gitlab API token not allowed, but it's almost
+the same thing) and SSh private key;
+- Configure GitLab Servers section in: Manage Jenkins -> Configure System;
+- New item -> Multibranch pipeline -> Branch Sources -> gitlab_project:
+  - Specify the gitlab user, credentials and choose multibranch project;
+  - 
+  -
+
 
 
 
