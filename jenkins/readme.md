@@ -12,7 +12,7 @@
 
 ###### 1.2) Configuration Dynamic agent:
 
-Configuration Dynamic agent possibly with this code-clock in Jenkinsfile:
+Configuration Dynamic agent possibly with this code-bclock in Jenkinsfile:
 
    ```js
     pipeline {
@@ -80,6 +80,8 @@ the same thing) and SSh private key;
           <jenkinsserverURL>/multibranch-webhook-trigger/invoke?token=<token_name>
         - input <token_name> in Trigger token section;
 - Create Jenkinsfile for every branch, for which will be created pipeline;
+- Create bash script for checking commit message which must be compliance best
+  practices, added sh stage to the Jenkins file;
 
 
 
