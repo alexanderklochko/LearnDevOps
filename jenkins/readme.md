@@ -1,7 +1,7 @@
 ## Jenkins_task 
--------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
 ### General configurations
--------------------------------------------------------------------------------------
+---------------------------------------------------------------------------------------
 #### 1) Configuration jenkins agents 
 
 + Linux agent:
@@ -82,6 +82,56 @@ the same thing) and SSh private key;
 - Create Jenkinsfile for every branch, for which will be created pipeline;
 - Create bash script for checking commit message which must be compliance best
   practices, added sh stage to the Jenkins file;
+- Add Docker lint stage to the Jenkins file and install hadolint on linux_node;
+- Prohibit merge branch if pipeline was failed. Gitlab setting:
+    - Multibranch pipeline -> settings -> general -> merge requests -> expands ->
+      -> Merge checks -> Pipelines must succeed;
+
+### Develop CI pipeline for [petclinic](https://gitlab.com/kTwice/petclinic) project
+
+1. At first install 'GitLab Plugin' and create gilab connection in Manage Jenkins ->
+-> Configure System -> Gitlab:
+  - connection name;
+  - Gitlab host URL;
+  - Credentials: choose Gitlab API token (Create Gitlab Personal Access Tokens);
+2. Jenkins integrations (dedicated integration for every project) and Gitlabwebhook 
+(url for that you can find in such way: Jenkins Dashboard -> Job -> Configure -> Build Triggers section)
+3. In job configuration for checking Jenkinsfile from Gitlab repository we need credentials, for this do:
+  - login as jenkins user on Jenkins controller (create password, add to wheel/sudo group, add bin/bash shell), cause SSH keys must be in jenkins' home directory;
+  - configure SSH connection between Jenkins controller and gitlab;
+4. Install and Configure `Jenkins pipeline linter connector` in visual code.
+5. Configuration linux agent (node). It's better for it use SSH host verificated stratagy:
+  - create user jenkins on linux_node, create ~/jenkins_node as workspace, create ~/.ssh and authorized file in it with right access:
+    - .ssh directory: 700 (drwx------);
+    - public key (.pub file): 644 (-rw-r--r--);
+    - private key 600: (-rw-------);
+    - ~/.ssh/config 600: (-rw-------);
+    - ~/.ssh/authorized_keys 600: (-rw-------);
+  - install and configure [docker](https://www.cyberciti.biz/faq/how-to-install-docker-on-amazon-linux-2/) on jenkins agent;
+  - Jenkins works good with ed25519 ssh type connecion, therefore do:
+    - ssh-keygen -t ed25519 -C "linux_agent";
+    - cat linux_agent.pub >> authorized_keys.
+  - Add credentional to Jenkins;
+  - Login as jenkins user to jenkins_controller, add private_key to ssh_agent and do command `ssh <ip_jenkins_node>`;
+  - Install git (then, in configuration job define Tool (path to git)), install docker, add exsting ssh key to /home/jenkins/.ssh
+6. Extended [swap](https://aws.amazon.com/ru/premiumsupport/knowledge-center/ec2-memory-swap-file/) space to 2Gb and install [openJDK17](https://docs.aws.amazon.com/corretto/latest/corretto-17-ug/amazon-linux-install.html).
+7. Install and configure [Sonar](https://www.devopshint.com/how-to-install-sonarqube-on-amazon-linux-2/) with postgreSQL;
+We can use t3.micro (free tier in EU-North region) for this if add swap 3GB space; Jenskins Plugin: `SonarQube Scanner for Jenkins`.
+Integration sonar in CI:
+   - Create SonarQube User Token at SonarQube Server: 
+   - Administration > Configuration > Webhooks > Create
+   - Manage Jenkins > Configure System > SonarQube servers
+8. After instance was stoped, when it's started again, for successive implementing it's to pipeline you should:
+  ###### for linux_node:
+    - update 'known_host' file in /var/lib/jenkins/.ssh/. It's convinient simply to use command: `ssh <node_IP>` on jenkins_master server being loged as jenkins user;
+    - update node configuration: Manage Jenkins -> Manage node and clouds ->
+     linux_node: update host IP.
+  ###### for sonar_node:
+    - Manage Jenkins -> Configure System -> SonarQube installations -> Server URL
+    (update IP);
+
+### Develop CD pipeline for [petclinic](https://gitlab.com/kTwice/petclinic) project
+
 
 
 
