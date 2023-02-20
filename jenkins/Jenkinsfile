@@ -1,7 +1,10 @@
-pipeline {
-    agent { 
-        label 'linux_node'
+pipeline { 
+    agent {
+        node {
+            label 'linux_node'
+            customWorkspace '/home/jenkins/jenkins_node/petclinic'
         }
+    }
     options {
         buildDiscarder logRotator( 
                     daysToKeepStr: '3', 
@@ -11,28 +14,16 @@ pipeline {
     triggers {
         gitlab(
           triggerOnPush: false, 
-          triggerOnMergeRequest: true, triggerOpenMergeRequestOnPush: "never",
-          triggerOnNoteRequest: true,
-          noteRegex: "Jenkins please retry a build",
-          skipWorkInProgressMergeRequest: true,
-          ciSkip: false,
-          setBuildDescription: true,
-          addNoteOnMergeRequest: true,
-          addCiMessage: true,
-          addVoteOnMergeRequest: true,
-          acceptMergeRequestOnSuccess: true,
-          branchFilterType: "NameBasedFilter",
-          includeBranchesSpec: "main",
-          excludeBranchesSpec: "")
+          triggerOnMergeRequest: true, triggerOpenMergeRequestOnPush: 'never',
+          triggerOnAcceptedMergeRequest: true,
+          branchFilterType: 'NameBasedFilter',
+          includeBranchesSpec: 'main')
     }
-
     stages { 
         stage('Cleanup Workspace') {
             steps {
                 cleanWs()
-                sh """
-                echo "Cleaned Up Workspace For Project"
-                """
+                echo 'Cleaned Up Workspace For Project'
             }
         }
         stage('Code Checkout') {
@@ -40,23 +31,48 @@ pipeline {
                 checkout scmGit(
                     branches: [[name: '*/main']], 
                     extensions: [], 
-                    userRemoteConfigs: [[credentialsId: 'petclinic_2', url: 'git@git.epam.com:oleksandr_klochko/spring-petclinic.git']])  
+                    userRemoteConfigs: [[credentialsId: 'petclinic', url: 'git@git.epam.com:oleksandr_klochko/spring-petclinic.git']])  
             }
         }
-        stage('Docker Build') {
+        stage('Sonarqube') {
+            environment {
+                SCANNER_HOME = tool 'Sonar_scaner'
+                PROJECT_NAME = 'scripted_pipeline'
+            }
             steps {
-                sh 'cd /var/lib/jenkins/workspace/scripted_pipeline'    
+                withSonarQubeEnv(credentialsId: 'sonar_admin', installationName: 'sonar') {
+                sh "${SCANNER_HOME}/bin/sonar-scanner -Dsonar.java.binaries=. \
+                    -Dsonar.projectKey=$PROJECT_NAME \
+                    -Dsonar.sources=."
+                }
+                timeout(time: 10, unit: 'MINUTES') {
+                waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+        stage('Build app') {
+            steps {    
                 sh './mvnw package'
-      	        sh 'docker build -t petclinic:v1 -t petclinic:latest .'
+            }
+        }
+        stage('Docker image build') {
+            steps {    
+      	        sh 'docker build -t oleksandriyskiy/petclinic:${BUILD_NUMBER} -t oleksandriyskiy/petclinic:latest .'
             }
         }
         stage('Docker Push') {
             steps {
       	        withCredentials([usernamePassword(credentialsId: 'dockerHub', passwordVariable: 'dockerHubPassword', usernameVariable: 'dockerHubUser')]) {
-        	    sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPassword}"
-                sh 'docker push oleksandriyskiy/spring-petclinic:latest'  
+        	    sh 'docker login -u ${dockerHubUser} -p ${dockerHubPassword}'
+                sh 'docker push oleksandriyskiy/petclinic:latest' 
+                sh 'docker push oleksandriyskiy/petclinic:${BUILD_NUMBER}' 
                 }
             }
         }
+        stage('Docker logout') {
+            steps {    
+      	        sh 'docker logout'
+            }
+        }
     }
-}   
+}  
