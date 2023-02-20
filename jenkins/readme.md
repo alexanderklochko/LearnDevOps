@@ -9,6 +9,10 @@
   - between controller and agent;
   - create labels and remote root directory;
 + Windows agent:
+  - use Vagrant for install Windosws Server 2016 on Virtual Box 
+    (ctrl+del switch to VM window);
+  - download and configure ngrok;
+  -  
 
 ###### 1.2) Configuration Dynamic agent:
 
@@ -82,7 +86,8 @@ the same thing) and SSh private key;
 - Create Jenkinsfile for every branch, for which will be created pipeline;
 - Create bash script for checking commit message which must be compliance best
   practices, added sh stage to the Jenkins file;
-- Add Docker lint stage to the Jenkins file and install hadolint on linux_node;
+- Add Docker lint stage to the Jenkins file and install 
+[hadolint](https://tcoil.info/how-to-install-hadolint-on-linux/) on linux_node;
 - Prohibit merge branch if pipeline was failed. Gitlab setting:
     - Multibranch pipeline -> settings -> general -> merge requests -> expands ->
       -> Merge checks -> Pipelines must succeed;
