@@ -137,6 +137,17 @@ Integration sonar in CI:
 
 ### Develop CD pipeline for [petclinic](https://gitlab.com/kTwice/petclinic) project
 
+1. Install `Active Choice` plugin - It's allow us to use any kind of Groovy script.
+Create two parameter:
+    - Choice (with deq and qa parameters, which are correponded to dev and qa jenkins agents );
+    - Active choice for giving list of images from DockerHub (using scriptlet for it).
+2. Install and configure two linux agents with installed docker in it.
+3. Add healthcheck stage to Jenkinsfile (use bash script).
+. Use `Email Extension Plugin` and `Mailer Plugin`, they are installed by default.
+5. Setup SMTP in Jenkins (Manage Jenkins -> Configure System -> 
+  ->Extended E-mail Notification) and add notification block to the Jenkinsfile.
+  Use google App password for creating credentials.
+
 
 
 

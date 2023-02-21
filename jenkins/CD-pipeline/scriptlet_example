@@ -1,0 +1,93 @@
+
+// Import the JsonSlurper class to parse Dockerhub API response
+import groovy.json.JsonSlurper
+// Set the URL we want to read from, it is MySQL from official Library for this example, limited to 20 results only.
+docker_image_tags_url = "https://registry.adx.vn/v2/form-be/tags/list"
+try {
+    // Set requirements for the HTTP GET request, you can add Content-Type headers and so on...
+    def http_client = new URL(docker_image_tags_url).openConnection() as HttpURLConnection
+    http_client.setRequestMethod('GET')
+
+    String userCredentials = "your_user:your_passwd";
+    String basicAuth = "Basic " + new String(Base64.getEncoder().encode(userCredentials.getBytes()));
+
+    http_client.setRequestProperty ("Authorization", basicAuth);
+    
+    // Run the HTTP request
+    http_client.connect()
+    // Prepare a variable where we save parsed JSON as a HashMap, it's good for our use case, as we just need the 'name' of each tag.
+    def dockerhub_response = [:]    
+    // Check if we got HTTP 200, otherwise exit
+    if (http_client.responseCode == 200) {
+        dockerhub_response = new JsonSlurper().parseText(http_client.inputStream.getText('UTF-8'))
+    } else {
+        println("HTTP response error")
+        System.exit(0)
+    }
+    // Prepare a List to collect the tag names into
+    def image_tag_list = []
+    // Iterate the HashMap of all Tags and grab only their "names" into our List
+    dockerhub_response.tags.each { tag_metadata ->
+        image_tag_list.add(tag_metadata)    
+    }
+    // The returned value MUST be a Groovy type of List or a related type (inherited from List)
+    // It is necessary for the Active Choice plugin to display results in a combo-box
+    return image_tag_list.sort()
+} catch (Exception e) {
+         // handle exceptions like timeout, connection errors, etc.
+         println(e)
+}
+##############################################################
+import groovy.json.JsonSlurperClassic
+import jenkins.model.Jenkins
+
+//image = imageName(Service)
+token = getAuthTokenDockerHub()
+tags = getTagFromDockerHub(image, token)
+return tags
+
+def getTagFromDockerHub(authToken) {
+    def url = new URL("https://registry.hub.docker.com/v2/repositories/oleksandriyskiy/petclinic/tags")
+    def parsedJSON = parseJSON(url.getText(requestProperties:["Authorization":"JWT ${authToken}"]))
+    def regexp = "^\\d{1,2}.\\d{1,2}\$"
+    parsedJSON.results.findResults { 
+    it.name =~ /$regexp/ ? "${it.name}".toString() : null
+    }
+}
+
+def getAuthTokenDockerHub() {
+    def creds = com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials(
+    com.cloudbees.plugins.credentials.common.StandardUsernameCredentials.class,
+    Jenkins.instance,
+    null,
+    null)
+    for (c in creds) {
+    if (c.id == "dockerHub") {
+        user = c.username
+        pass = c.password
+    }
+    }
+    def url = new URL("https://hub.docker.com/v2/users/login/")
+    def conn = url.openConnection()
+    conn.setRequestMethod("POST")
+    conn.setRequestProperty("Content-Type", "application/json")
+    conn.doOutput = true
+
+    def authString = "{\"username\": \"${user}\", \"password\": \"${pass}\"}"
+    def writer = new OutputStreamWriter(conn.outputStream)
+    writer.write(authString)
+    writer.flush()
+    writer.close()
+    conn.connect()
+
+    def result = parseJSON(conn.content.text)
+    return result.token
+}
+def parseJSON(json) {
+    return new groovy.json.JsonSlurperClassic().parseText(json)
+}
+def imageName(name){
+return "oleksandriyskiy/${name}".toString()
+}
+###################################################################
+
