@@ -11,8 +11,12 @@
 + Windows agent:
   - use Vagrant for install Windosws Server 2016 on Virtual Box 
     (ctrl+del switch to VM window);
-  - download and configure ngrok;
-  -  
+  - install the same with Jenkins controller Java version in this case it's
+    [OpenJDK"11.0.17" 2022-10-18 LTS](https://www.oracle.com/java/technologies/downloads/#java11-windows);
+  - create jenkins user with administrative rights;
+  - create windows agent in Jenkins controller (label, remote directory, 
+    Launch method);
+  - configure SSH connection between Jenkins controller and windows agent (jenkins user).
 
 ###### 1.2) Configuration Dynamic agent:
 

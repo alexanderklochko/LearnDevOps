@@ -1,6 +1,6 @@
 sudo yum update -y
 sudo yum search docker
 sudo yum install docker -y
-sudo usermod -a -G docker ec2-user, jenkins
+sudo usermod -a -G docker jenkins
 sudo systemctl enable docker.service
 sudo systemctl start docker.service
