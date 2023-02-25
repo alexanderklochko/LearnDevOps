@@ -2,7 +2,6 @@ pipeline {
     agent {
         node {
             label 'linux_node'
-            customWorkspace '/home/jenkins/jenkins_node/petclinic'
         }
     }
     options {

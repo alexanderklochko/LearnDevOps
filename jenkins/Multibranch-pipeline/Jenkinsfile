@@ -2,41 +2,41 @@ pipeline {
     agent {
         node {
             label 'linux_node'
-            customWorkspace '/home/jenkins/jenkins_node/springboot3_job'
         }
     }
     stages { 
         stage('Check status') {
             steps {
-                sh "echo 'Pipeline for springboot3 branch'"
+                sh "echo 'Pipeline for ${BRANCH_NAME} branch'"
             }
         }
         stage('Cleanup Workspace') {
             steps {
                 cleanWs()
-                echo 'Cleaned Up Workspace For Project'
+                echo "Cleaned Up Workspace For Project"
             }
         }
         stage('Code Checkout') {
             steps {
                 checkout scmGit(
-                    branches: [[name: '*/feature']], 
+                    branches: [[name: "*/${BRANCH_NAME}"]], 
                     extensions: [], 
                     userRemoteConfigs: [[credentialsId: 'petclinic', url: 'git@git.epam.com:oleksandr_klochko/multibrunch_spring-petclinic.git']])
             }
         }
         stage('Check commit message') {
             steps {
-                sh '/home/jenkins/jenkins_node/message_check.sh'
+                sh "chmod +x ./message_check.sh"
+                sh "./message_check.sh"
             }
         }
         stage('Lint Dockerfile') {
             steps {
-                sh 'hadolint Dockerfile | tee -a hadolint_report.txt'
+                sh "hadolint Dockerfile | tee -a hadolint_report.txt"
             }
             post {
                 always {
-                    archiveArtifacts 'hadolint_report.txt'
+                    archiveArtifacts "hadolint_report.txt"
                 }
             }
         }
