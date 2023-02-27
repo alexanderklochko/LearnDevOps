@@ -46,49 +46,30 @@ pipeline {
         DEPLOY_TO = "${params.ENV}"
         DEFAULT_SUBJECT = "Health Check: $BUILD_STATUS"
         DEV_IP = "16.170.201.198"
-        QA_IP = "13.49.230.198"
+        QA_IP = ""
     }
     stages {
-        stage('Deploy to dev') {
-            when { 
-                environment(name: "DEPLOY_TO", value: "dev")
+        stage('Define deploy environment') {
+            when {
+                anyOf {
+                    environment name: 'DEPLOY_TO', value: 'dev'
+                    environment name: 'DEPLOY_TO', value: 'qa'
+                }
+            }
+            environment {
+                SERVER_IP = "${QA_IP} | ${DEV_IP}"
             }
             steps {
                 script {
                     sh """
                     #!/bin/bash
-                    ssh -tt jenkins@${DEV_IP} <<EOF
+                    ssh -tt jenkins@${SERVER_IP} <<EOF
                     docker rm --force petclinic
                     docker pull oleksandriyskiy/petclinic:${params.Tag}
                     docker run -dp 8080:8080 --name petclinic oleksandriyskiy/petclinic:${params.Tag}
                     exit 0
                     EOF"""
                 }
-            }
-        }
-        stage('Deploy to qa') {
-            when { 
-                environment(name: "DEPLOY_TO", value: "qa")
-            }
-            steps {
-                script {
-                    sh """
-                    #!/bin/bash
-                    sudo ssh jenkins@${DEV_QA} << EOF
-                    docker rm --force petclinic
-                    docker pull oleksandriyskiy/petclinic:${params.Tag}"
-                    docker run -dp 8080:8080 --name petclinic oleksandriyskiy/petclinic:${params.Tag}
-                    exit 0
-                    << EOF
-                    """
-                }
-            }
-        }
-        stage('Healthcheck') {
-            environment{
-                SERVER_IP = "16.170.201.198"
-            }
-            steps {
                 script {
                     sh '''
                     #!/usr/bin/env bash
