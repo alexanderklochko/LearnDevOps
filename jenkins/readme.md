@@ -18,6 +18,9 @@
     Launch method);
   - configure SSH connection between Jenkins controller and windows agent (jenkins user).
 
+Complited job on windows agent:
+![](./images/windows_agent.png)
+
 ###### 1.2) Configuration Dynamic agent:
 
 Configuration Dynamic agent possibly with this code-bclock in Jenkinsfile:
@@ -56,14 +59,29 @@ For given credentials use preinstalle plugin - `Matrix Authorization Strategy Pl
 
 #### 3) Access rights for groups and users
 
-There were next steps: 
-- Jenkins Dashbord -> Manage Jenkins -> Configure Global Security;
-- Check "Enable security";
-- Set "Jenkins own user database" as security realm;
-- Check "Allow users to sign up";
-- Choose "Matrix based security";
-- Add your admin account in the matrix, check every box;
-It's possible by installed `Matrix Authorization Strategy Plugin`.
+In jenkins we can create and using groups in two ways:
+  - Having a LDAP server in which you configure users and groups. 
+    Then, you can integrate Jenkins with that server 
+    (Jenkins > Manage Jenkins > Access Control), setting permissions by group.
+  - Using Jenkins' own user database and installing Role Strategy Plugin.
+I prefer use the second way cause it's more easier and available after installing
+`Role-based Authorization Strategy`plugin.
+Creating roles:
+![](./images/roles.png)
+
+Assign roles to users:
+![](./images/users.png)
+
+Choosing first case we need to do next things:
+  - Jenkins Dashbord -> Manage Jenkins -> Configure Global Security;
+  - Check "Enable security";
+  - Set "Jenkins own user database" as security realm;
+  - Check "Allow users to sign up";
+  - Choose "Matrix based security";
+  - Add your admin account in the matrix, check every box;
+  - Add groups and users.
+It's possible by installed `Matrix Authorization Strategy Plugin` and
+having installed and configured LDAP server.
 
 ### Jenkins multibranch
 
@@ -87,9 +105,13 @@ the same thing) and SSh private key;
           -> create webhook with the next payload: 
           <jenkinsserverURL>/multibranch-webhook-trigger/invoke?token=<token_name>
         - input <token_name> in Trigger token section;
-- Create Jenkinsfile for every branch, for which will be created pipeline;
+- Create Jenkinsfile:
+    - use $BRANCH_NAME for definite current branch, It's a good point if we need
+      to do git clone <current branch>, use ${YOUR_JENKINS_HOST}/env-vars.html, where
+      you can find all available environment variables;
 - Create bash script for checking commit message which must be compliance best
-  practices, added sh stage to the Jenkins file;
+  practices, added sh stage to the Jenkins file, path for executing must be like 
+  <./script.sh>, do not store bash script on linux nodes;
 - Add Docker lint stage to the Jenkins file and install 
 [hadolint](https://tcoil.info/how-to-install-hadolint-on-linux/) on linux_node;
 - Prohibit merge branch if pipeline was failed. Gitlab setting:
@@ -141,13 +163,65 @@ Integration sonar in CI:
 
 ### Develop CD pipeline for [petclinic](https://gitlab.com/kTwice/petclinic) project
 
-1. Install `Active Choice` plugin - It's allow us to use any kind of Groovy script.
-Create two parameter:
+1. Install `Active Choice` plugin - It's allow us to use:
+   - Groovy scripts;
+   - Scriptler scripts - for this we need additional plugin `Scriptler`;
+   With scriptler plugin we can store groovy scripts on Jenkins and use them in such way:
+
+   ```js
+   properties([
+    parameters([
+        [$class: 'ChoiceParameter', 
+            choiceType: 'PT_SINGLE_SELECT', 
+            description: 'Select Tag image from the DockerHub List', 
+            name: 'Tag', 
+            script: [$class: 'ScriptlerScript',
+                    scriptlerScriptId:'get_tags.groovy',
+                    isSandboxed: false
+            ]
+   ```
+
+   Create two parameter:
     - Choice (with deq and qa parameters, which are correponded to dev and qa jenkins agents );
     - Active choice for giving list of images from DockerHub (using scriptlet for it).
-2. Install and configure two linux agents with installed docker in it.
-3. Add healthcheck stage to Jenkinsfile (use bash script).
-. Use `Email Extension Plugin` and `Mailer Plugin`, they are installed by default.
+2. Configure SSH connection to two deployment server. Use dynamic environment variables for
+   defining IP of deployment server (in this case we use AWS EC2 instances):
+
+   ```js
+        stage('Get deployment server IP') {
+            steps{
+            script {
+                env.SERVER_IP = sh (
+                    script: 'aws ec2 describe-instances --region eu-north-1 \
+                    --filters Name=tag:env,Values=${DEPLOY_TO} \
+                    --query "Reservations[*].Instances[*].[PublicIpAddress]" | \
+                     grep -E -o "([0-9]{1,3}[\\.]){3}[0-9]{1,3}"',
+                    returnStdout: true
+                    ).trim()
+                }
+            }
+        }
+   ```
+
+3.Add healthcheck stage to Jenkinsfile (use bash script). It's very inportant that
+  bash doesn't understand jenkins variables inside such expressions:
+
+  ```sh
+  STATUS_CODE=$(curl -sL -w "%{http_code}" ${IP}:8080 -o /dev/null --max-time ${CURL_MAX_TIME})
+  ```
+
+  Thats why, better to declare jenkins variables at the beggining of the script, like:
+
+  ```sh
+  #!/usr/bin/env bash
+                set -x
+                CURL_MAX_TIME=15
+                ATTEMPTS=25
+                SLEEP_TIME=20
+                IP=${SERVER_IP}
+  ```
+
+4. Use `Email Extension Plugin` and `Mailer Plugin`, they are installed by default.
 5. Setup SMTP in Jenkins (Manage Jenkins -> Configure System -> 
   ->Extended E-mail Notification) and add notification block to the Jenkinsfile.
-  Use google App password for creating credentials.
+  Use google App password for creating credentials.a

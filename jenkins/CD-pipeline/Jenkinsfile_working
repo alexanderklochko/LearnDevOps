@@ -19,44 +19,23 @@ pipeline {
     environment {
         DEPLOY_TO = "${params.ENV}"
         DEFAULT_SUBJECT = "Health Check: $BUILD_STATUS"
-        DEV_IP = "16.171.32.52"
-        QA_IP = "13.51.207.233"
     }  
     stages {
         stage('Get deployment server IP') {
             steps{
             script {
                 SERVER_IP = sh (
-                    script: 'aws ec2 describe-instances --region eu-north-1 --filters Name=tag:env,Values=dev --query "Reservations[*].Instances[*].[PublicIpAddress]" | \
+                    script: 'aws ec2 describe-instances --region eu-north-1 --filters Name=tag:env,Values=${DEPLOY_TO} --query "Reservations[*].Instances[*].[PublicIpAddress]" | \
                      grep -E -o "([0-9]{1,3}[\\.]){3}[0-9]{1,3}"',
                     returnStdout: true
                     ).trim()
-               
                 }
-                 echo "$SERVER_IP"
             }
         }
-        stage('Deploy to dev') {
-            when { 
-                environment(name: "DEPLOY_TO", value: "dev")
-            }
+        stage('Deploy to environment') {
             steps {
                 script {
-                    
                     sh """ssh jenkins@${SERVER_IP} 'docker pull oleksandriyskiy/petclinic:${params.Tag} &&
-                          docker rm -f petclinic &&
-                          docker run -dp 8080:8080 --name petclinic oleksandriyskiy/petclinic:${params.Tag}'
-                       """
-                }
-            }
-        }
-        stage('Deploy to qa') {
-            when { 
-                environment(name: "DEPLOY_TO", value: "qa")
-            }
-            steps {
-                script {
-                    sh """ssh jenkins@${QA_IP} 'docker pull oleksandriyskiy/petclinic:${params.Tag} &&
                           docker rm -f petclinic &&
                           docker run -dp 8080:8080 --name petclinic oleksandriyskiy/petclinic:${params.Tag}'
                        """
@@ -66,12 +45,6 @@ pipeline {
         stage('Health check') {
             steps {
                 script {
-                if (env.DEPLOY_TO == 'dev') {
-                        env.SERVER_IP = "${DEV_IP}"
-                    }
-                else {
-                        env.SERVER_IP = "${QA_IP}"
-                    }
                 sh '''
                 #!/usr/bin/env bash
                 set -x
@@ -82,7 +55,7 @@ pipeline {
                 for ATTEMPT in $(seq ${ATTEMPTS}); do
                     echo "Attempt ${ATTEMPT} of ${ATTEMPTS}"
                     echo "Curling against the Jenkins server"
-                    echo "Should expect a 200 within ${CURL_MAX_TIME} seconds"
+                    echo "Should expect a 200 within \${CURL_MAX_TIME} seconds"
                     STATUS_CODE=$(curl -sL -w "%{http_code}" ${SERVER_IP}:8080 -o /dev/null \
                                                                                 --max-time ${CURL_MAX_TIME})
                     if [[ "$STATUS_CODE" == "200" ]]; then
