@@ -1,0 +1,46 @@
+import groovy.json.JsonSlurperClassic
+import jenkins.model.Jenkins
+
+token = getAuthTokenDockerHub()
+tags = getTagFromDockerHub(token)
+return tags
+
+def getTagFromDockerHub(authToken) {
+    def url = new URL("https://registry.hub.docker.com/v2/repositories/oleksandriyskiy/petclinic/tags")
+    def parsedJSON = parseJSON(url.getText(requestProperties:["Authorization":"JWT ${authToken}"]))
+    def regexp = "^\\d{1,2}\$"
+    parsedJSON.results.findResults { 
+    it.name =~ /$regexp/ ? "${it.name}".toString() : null
+    }
+}
+def getAuthTokenDockerHub() {
+    def creds = com.cloudbees.plugins.credentials.CredentialsProvider.lookupCredentials(
+    com.cloudbees.plugins.credentials.common.StandardUsernameCredentials.class,
+    Jenkins.instance,
+    null,
+    null)
+    for (c in creds) {
+    if (c.id == "dockerHub") {
+        user = c.username
+        pass = c.password
+    }
+    }
+    def url = new URL("https://hub.docker.com/v2/users/login/")
+    def conn = url.openConnection()
+    conn.setRequestMethod("POST")
+    conn.setRequestProperty("Content-Type", "application/json")
+    conn.doOutput = true
+
+    def authString = "{\"username\": \"${user}\", \"password\": \"${pass}\"}"
+    def writer = new OutputStreamWriter(conn.outputStream)
+    writer.write(authString)
+    writer.flush()
+    writer.close()
+    conn.connect()
+
+    def result = parseJSON(conn.content.text)
+    return result.token
+}
+def parseJSON(json) {
+    return new groovy.json.JsonSlurperClassic().parseText(json)
+}
