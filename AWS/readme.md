@@ -21,12 +21,10 @@
    | :----------------: | :------------------------------------------------------------: |
    | Inbound  rules     | MYSQL/Aurora         TCP       3306          <ASG_SG id>       |
    | Outbount rules     |                               -                                |
-
    | ASG_SG             | Allow access from ALB to instances in ASG        on port 80    |
    | :----------------: | :------------------------------------------------------------: |
    | Inbound  rules     | HTTP                 TCP       80           <ALB_SG id>        |
    | Outbount rules     |                       All trafic                               |
-
    | ALB_SG             | Allow access from specific IPs to ALB        on port 80/443    |
    | :----------------: | :------------------------------------------------------------: |
    | Inbound  rules     | HTTP/HTTPS           TCP       80/443      <specific_IP>       |
@@ -40,16 +38,14 @@
    |  Target            |        local              |            <nat-ID>                |
    |  ssociation        |    Private subnets with EC2, which spin by ASG and where       |
    |    subnets         |   deployed our web app,  in each availability zone             |
-
    | RDS_RT             | Allow internet access for EC2 instances from private subnets   |
    | :----------------: | :------------------------------------------------------------: |
    | Destination        |                      10.0.0.0/16                               |
    | Target             |                        local                                   |
    | Association        |                                                                |
    |    subnets         |                 Private subnet with RDS                        |
-
    | Public_RT          |                 Internet and local routs                       |
-   | :---------------- :| :------------------------------------------------------------: |
+   | :----------------: | :------------------------------------------------------------: |
    | Destination        |      10.0.0.0/16          |            0.0.0.0/0               |
    | Target             |        local              |            <IG -id>                |
    | Association        |                                                                |
