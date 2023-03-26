@@ -17,7 +17,7 @@
 5) ###### Create security groups:
     For instances in autoscaling group
     
-    ![](images/ASG_outbound.png)
+    ![](images/ASG_outbound.PNG)
     ![](images/ASG_inbound.png)
    
     For application load balancer:
@@ -122,10 +122,7 @@
 #### Create private S3 bucket
 
 1) Put php-mysql-crud to the bucket;
-2) Allow EC2 copy code from private S3:
-   - [link](https://aws.amazon.com/ru/premiumsupport/knowledge-center/ec2-instance-access-s3-bucket/);
-   - [link](https://kloudle.com/academy/how-to-transfer-files-between-aws-s3-and-aws-ec2/).
-  with command: `aws s3 cp s3://crud770796886575/php-mysql-crud/ /var/www --recursive`
+2) Allow EC2 copy code from private S3: [lgrant my Amazon EC2 instance access to an Amazon S3 bucket](https://aws.amazon.com/ru/premiumsupport/knowledge-center/ec2-instance-access-s3-bucket/); with command: `aws s3 cp s3://crud770796886575/php-mysql-crud/ /var/www --recursive`
 
 #### Create and configure RDS
 
