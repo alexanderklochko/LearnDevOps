@@ -139,3 +139,7 @@
   `sudo mysql -u aleks -p -h db-mysql-crud.cemtf9kzp91w.eu-north-1.rds.amazonaws.com < crud/database/script.sql`
 
 #### Create SSL certificate. Domain name.
+
+###### There is general scheme of infrastructure
+
+![](images/Schema.png)
