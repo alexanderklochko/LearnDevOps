@@ -142,4 +142,4 @@
 
 ###### There is general scheme of infrastructure
 
-![](images/Schema.png)
+![](images/Schema.PNG)
