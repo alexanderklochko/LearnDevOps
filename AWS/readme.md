@@ -14,39 +14,33 @@
    in each availability zone, two for creating EC2 instances, by autoscalling group.
 3) Create internat gateway, attached to VPC. 
 4) Amazon RDS -> Subnet Groups -> create subnet group.
-5) Create security group for target instances (allow HTTP, and ssh). There are three security groups,
-   which were used in this case:
-
-   | RDS_SG             | Allow access from EC2 autoscalling group to RDS on port 3306   |
-   | :----------------: | :------------------------------------------------------------: |
-   | Inbound  rules     | MYSQL/Aurora         TCP       3306          <ASG_SG id>       |
-   | Outbount rules     |                               -                                |
-   | ASG_SG             | Allow access from ALB to instances in ASG        on port 80    |
-   | Inbound  rules     | HTTP                 TCP       80           <ALB_SG id>        |
-   | Outbount rules     |                       All trafic                               |
-   | ALB_SG             | Allow access from specific IPs to ALB        on port 80/443    |
-   | Inbound  rules     | HTTP/HTTPS           TCP       80/443      <specific_IP>       |
-   | Outbount rules     |                       All trafic                               |
-
-6) Create route tables:
-
-   | NAT_RT             |               Internet and local routs                         |
-   | :----------------: | :------------------------------------------------------------: |
-   |  Destination       |      10.0.0.0/16          |            0.0.0.0/0               |
-   |  Target            |        local              |            <nat-ID>                |
-   |  ssociation        |    Private subnets with EC2, which spin by ASG and where       |
-   |    subnets         |   deployed our web app,  in each availability zone             |
-   | RDS_RT             | Allow internet access for EC2 instances from private subnets   |
-   | Destination        |                      10.0.0.0/16                               |
-   | Target             |                        local                                   |
-   | Association        |                                                                |
-   |    subnets         |                 Private subnet with RDS                        |
-   | Public_RT          |                 Internet and local routs                       |
-   | Destination        |      10.0.0.0/16          |            0.0.0.0/0               |
-   | Target             |        local              |            <IG -id>                |
-   | Association        |                                                                |
-   |    subnets         |   Public subnets, which assosiated with ALB                    |
+5) ###### Create security groups:
+    For instances in autoscaling group
+    
+    ![](images/ASG_outbound.png)
+    ![](images/ASG_inbound.png)
    
+    For application load balancer:
+    
+    ![](images/ALB_outbound_rools.png)
+    ![](images/ALB_sec_group_inbound.png)
+
+    For RDS:
+
+    ![](images/rds_inbound.png)
+    
+6) ###### Create route tables:
+    For instances in autoscaling group, private subnets to nat gateway:
+    
+    ![](images/nat_gateway.png)
+
+    For application load balancer, public subnets to internet gateway:
+    
+    ![](images/ig.png)
+
+    For RDS, RDS subnet group to local VPC:
+
+    ![](images/rds.png)
 
 #### Creating autoscaling group and launch template
 
