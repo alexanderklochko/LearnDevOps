@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-db-config
+  namespace: app
+data:
+  db_name: crud
+  db_entrypoint: db-service.db.svc.cluster.local:3306

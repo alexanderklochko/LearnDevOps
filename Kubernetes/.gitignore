@@ -1,0 +1,4 @@
+GKE/gke_zonal_cluster/.terraform
+GKE/gke_zonal_cluster/terraform.tfstate
+GKE/gke_zonal_cluster/terraform.tfstate.backup
+
