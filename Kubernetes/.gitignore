@@ -2,3 +2,20 @@ GKE/gke_zonal_cluster/.terraform
 GKE/gke_zonal_cluster/terraform.tfstate
 GKE/gke_zonal_cluster/terraform.tfstate.backup
 
+EKS/s3-bucket
+
+EKS/eks-cluster/.terraform
+
+EKS/eks-cluster/01-eks-cluster-manifests/.terraform
+EKS/eks-cluster/01-eks-cluster-manifests/.terraform.lock
+EKS/eks-cluster/01-eks-cluster-manifests/.terraform.tfvars
+
+EKS/eks-cluster/02-aws-lb-controller-tf-manifests/.terraform
+EKS/eks-cluster/02-aws-lb-controller-tf-manifests/.terraform.lock
+EKS/eks-cluster/02-aws-lb-controller-tf-manifests/terraform.tfvars
+
+
+
+
+
+
