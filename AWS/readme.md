@@ -1,6 +1,17 @@
 ## Cloud_task_AWS 
 ---------------------------------------------------------------------------------------
 
+### SUMMARY
+
+This project included high availability infrastructure for simle web-application in AWS.
+There are internet-facing application load balancer with two listeners (http listener redirect to 
+https listener), autoscalling group which is triggered by cloudwatch alarm (alarm type - request 
+per target) and has two autoscalling policy: adding instance to target group (when cloudwatch 
+alarm in alarm state), and deleting instance from the target group, when alarm state is OK.
+For database storage were chosen RDS mysql, which is located in private subnet and db subnet group
+consists of two private subnets (one per availability zone) Autoscalling group ups their
+instances in two private subnets (one per availability zone). 
+
 #### IAM
 
 1) Create IAM admin user with administrative access for configuring all resourses, which were used in task;
@@ -62,9 +73,6 @@
       sudo yum install -y php php-devel
       sudo yum install -y php-{pear,cgi,pdo,common,curl,mbstring,gd,mysqlnd,gettext,bcmath,json,xml,fpm,intl,zip}
       sudo yum install -y httpd
-      curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-      unzip awscliv2.zip
-      sudo ./aws/install
       # Copy applications' code from S3
       sudo aws s3 cp s3://crud770796886575/php-mysql-crud/ /var/www/html --recursive
       # Give appropriate rights
@@ -137,6 +145,15 @@
   - `FLUSH PRIVILEGES`
 4) Import script.sql by following command:
   `sudo mysql -u aleks -p -h db-mysql-crud.cemtf9kzp91w.eu-north-1.rds.amazonaws.com < crud/database/script.sql`
+
+#### Service quote
+
+For some reasons AWS can restrict quotas for some resources. In my case, after some period of time I encountered with
+vCPU numbers quota limit - It was 1 per region. I cheked it be the next command:
+
+```sh
+aws service-quotas get-service-quota --region eu-west-2 --service-code ec2 --quota-code L-1216C47A --query 'Quota.Value'
+```
 
 #### Create SSL certificate. Domain name.
 
