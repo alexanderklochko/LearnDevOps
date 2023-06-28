@@ -155,6 +155,12 @@ vCPU numbers quota limit - It was 1 per region. I cheked it be the next command:
 aws service-quotas get-service-quota --region eu-west-2 --service-code ec2 --quota-code L-1216C47A --query 'Quota.Value'
 ```
 
+Get all information about quotas:
+
+```sh
+aws service-quotas list-service-quotas --service-code=vpc --region=eu-west-1
+```
+
 #### Create SSL certificate. Domain name.
 
 ###### There is general scheme of infrastructure
