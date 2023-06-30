@@ -1,20 +1,28 @@
+provider "aws" {
+  shared_credentials_files = ["~/.aws/credentials"]
+  region                   = "ca-central-1"
+}
+
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 4.60"
+    }
+  }
+}
+
 # S3 Buckets
-resource "aws_s3_bucket" "crud-bucket" { # main bucket
-  bucket = "crudbgadjkfbg2383873879hjadccg"
+resource "aws_s3_bucket" "main-bucket" { # main bucket
+  bucket = "terraform-remote-state-canada-backet"
   versioning {
     enabled = true
   }
 }
 
-resource "aws_s3_bucket_object" "dev-bucket-sub1" { # crud bucket
-  bucket  = aws_s3_bucket.dev-bucket.id
-  key     = "crud/"
-  content = ""
-}
-
 # DynamoDB
 resource "aws_dynamodb_table" "crud-table" {
-  name           = "crud"
+  name           = "state-locking-table"
   read_capacity  = 5
   write_capacity = 5
 

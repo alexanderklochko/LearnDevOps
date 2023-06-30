@@ -1,0 +1,147 @@
+---
+- hosts: db
+  become: yes
+
+  gather_facts: no
+  tasks:
+    - name: Put SELinux in permissive mode.
+      ansible.posix.selinux:
+        policy: targeted
+        state: permissive
+    - name: Upgrade all packages
+      ansible.builtin.yum:
+        name: '*'
+        state: latest
+        update_cache: yes
+    - name: Make shure that "{{ DBPORT }}" is open
+      ansible.posix.firewalld:
+        port: "{{ DBPORT }}"
+        permanent: true
+        state: enabled
+    - name: install mysql DB
+      ansible.builtin.yum:
+        name:
+          - mysql-server
+          - mysql
+          - python3-PyMySQL
+        state: latest
+    - name: Enable service mysqld, and not touch the state
+      ansible.builtin.service:
+        name: mysqld
+        enabled: yes
+    - name: Start mysqld service, if not started
+      ansible.builtin.service:
+        name: mysqld
+        state: started
+    - name: Save root password in .my.cnf
+      template:
+        src: templates/root_cnf.j2
+        dest: /root/.my.cnf
+        owner: 'root'
+        mode: '0600'
+    - name: Set MySQL root Password
+      community.mysql.mysql_user:
+        name: 'root'
+        password: "{{ ROPASS }}"
+        priv: '*.*:ALL,GRANT'
+        login_unix_socket: /var/lib/mysql/mysql.sock
+        state: present
+    - name: Create new databases with the name "{{ DBNAME }}"
+      community.mysql.mysql_db:
+        login_user: 'root'
+        login_password: "{{ ROPASS }}"
+        name: "{{ DBNAME }}"
+        state: present
+    - name: Create database user with name "{{ DBUSER }}" and password "{{ DBPASS }}" with privileges
+      community.mysql.mysql_user:
+        login_user: root
+        name: "{{ DBUSER }}"
+        password: "{{ DBPASS }}"
+        priv: '{{ DBNAME }}.*:ALL'
+        host: "{{ REMOTE }}"
+        state: present
+    - name: Copy a script.sql to the remote host
+      ansible.builtin.copy:
+        src: /home/ansible/script.sql
+        dest: /tmp
+        owner: root
+        group: root
+        mode: '0644'
+    - name: Database exists
+      mysql_db:
+        name: crud
+        state: present
+      register: database_exists
+    - name: Import mysql configurations
+      mysql_db:
+        name: crud
+        state: import
+        target: /tmp/script.sql
+      when: database_exists.changed
+    - name: Restart service mysqld
+      ansible.builtin.service:
+        name: mysqld
+        state: restarted
+
+- hosts: app
+  become: yes
+
+  gather_facts: no
+  tasks:
+    - name: Upgrade all packages
+      ansible.builtin.yum:
+        name: '*'
+        state: latest
+        update_cache: yes
+    - name: Put SELinux in permissive mode.
+      ansible.posix.selinux:
+        policy: targeted
+        state: permissive
+    - name: Make shure port "{{ APPORT }}" is open
+      ansible.posix.firewalld:
+        port: "{{ APPORT }}"
+        permanent: true
+        state: enabled
+    - name: install the last apache version
+      ansible.builtin.yum:
+        name:
+        - httpd
+        - php
+        - php-common
+        - php-cli
+        - php-mysqlnd
+        - php-mysqli
+        - git
+        state: latest
+    - name: Give rights to the user
+      ansible.builtin.user:
+        name: "{{ USER }}"
+        groups: apache
+        append: yes
+    - name: Recursively change ownership of a directory
+      ansible.builtin.file:
+        path: /var/www/html
+        state: directory
+        recurse: yes
+        owner: "{{ USER }}"
+        group: apache
+    - name: Clone a private repository into working_directory
+      ansible.builtin.git:
+        accept_hostkey: true
+        repo: "{{ GIT_REPO }}"
+        version: "{{ GIT_BRANCH }}"
+        dest: /var/www/html
+      become: no
+    - name: substitude db log and passwd by jinja2 template
+      ansible.builtin.template:
+        src: templates/db.php.j2
+        dest: /var/www/html/db.php
+      become: no
+    - name: Enable service httpd
+      ansible.builtin.service:
+        name: httpd
+        enabled: yes
+    - name: Start service httpd, if not started
+      ansible.builtin.service:
+        name: httpd
+        state: started

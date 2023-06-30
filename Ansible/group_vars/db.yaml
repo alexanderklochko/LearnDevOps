@@ -1,0 +1,13 @@
+---
+ansible_ssh_user: ansible
+ansible_ssh_common_args: '-F /home/ansible/config-db.cfg'
+
+DBBPORT: 3306
+DBPORT: '3306/tcp'
+ROPASS: 12345678
+DBUSER: aleks
+DBPASS: 123456
+DBNAME: crud
+
+REMOTE: 192.168.0.104
+

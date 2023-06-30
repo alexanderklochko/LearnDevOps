@@ -1,0 +1,15 @@
+# SSH config
+ansible_ssh_user: ansible
+ansible_ssh_common_args: '-F /home/ansible/config-app.cfg'
+
+# Playbook's variables
+GIT_REPO: git@github.com:alexanderklochko/crud.git
+GIT_BRANCH: main
+USER: ansible
+
+PROJECT_PATH: /var/www/html
+APPORT: '80/tcp'
+URL: '192.168.0.105'
+DBUSER: aleks
+DBPASS: 123456
+DBNAME: crud

@@ -12,9 +12,9 @@ terraform {
   }
   required_version = ">= 1.4"
     backend "s3" {
-    region         = "eu-central-1" 
+    region         = "ca-central-1" 
     key            = "terraform.tfstate"
-    bucket         = "terraform-remote-state342"
+    bucket         = "terraform-remote-state-canada-backet"
     dynamodb_table = "state-locking-table" 
   }
 }
