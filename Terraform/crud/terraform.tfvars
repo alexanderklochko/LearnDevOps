@@ -1,37 +1,37 @@
 # General parameters
 aws_region  = "eu-central-1"
-environment = "crud"
+environment = "crud1"
 allowed_ips = "31.129.232.108/30"
 
 # Network parameter
-vpc_cidr = "10.0.0.0/16"
+vpc_cidr = "172.16.0.0/16"
 public_subnet = {
   public_1 = {
-    cidr = "10.0.1.0/24"
+    cidr = "172.16.1.0/24"
     az   = "eu-central-1b"
   },
   public_2 = {
-    cidr = "10.0.2.0/24"
+    cidr = "172.16.2.0/24"
     az   = "eu-central-1c"
   }
 }
 private_subnet = {
   private_1 = {
-    cidr = "10.0.3.0/24"
+    cidr = "172.16.3.0/24"
     az   = "eu-central-1b"
   },
   private_2 = {
-    cidr = "10.0.4.0/24"
+    cidr = "172.16.4.0/24"
     az   = "eu-central-1c"
   }
 }
 private_subnet_RDS = {
   private_RDS_1 = {
-    cidr = "10.0.5.0/24"
+    cidr = "172.16.5.0/24"
     az   = "eu-central-1b"
   },
   private_RDS_2 = {
-    cidr = "10.0.6.0/24"
+    cidr = "172.16.6.0/24"
     az   = "eu-central-1c"
   }
 }
