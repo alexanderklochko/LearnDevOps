@@ -1,7 +1,7 @@
 # General parameters
 
 environment = "crud"
-aws_region  = "ca-central-1"
+aws_region  = "eu-central-1"
 environment = "crud"
 allowed_ips = "31.129.232.111/30"
 
@@ -9,7 +9,7 @@ allowed_ips = "31.129.232.111/30"
 allocated_storage  = 20
 database_name      = "crud"
 rds_engine         = "mysql"
-availability_zone  = "ca-central-1b"
+availability_zone  = "eu-central-1b"
 rds_instance_class = "db.t3.micro"
 master_username    = "root"
 username           = "aleks"
@@ -19,20 +19,20 @@ instance_type   = "t2.micro"
 s3_uri          = "s3://crudprivatebacket/php-mysql-crud/" 
 max_size        = 3
 min_size        = 1  
-instance_warmup = 60
-asg_cooldown    = 60
+instance_warmup = 180
+asg_cooldown    = 120
 
 # ASG_dynamic_policy
 remove_instance     = -1
 add_instance        = 1
-asg_policy_cooldown = 60
+asg_policy_cooldown = 120
 
 # TARGET_GROUP
-deregistration_delay = 60
-check_grace_period   = 120
+deregistration_delay = 120
+check_grace_period   = 300
 
 # CLOUDWATCH
-period    = 30
+period    = 300
 threshold = 10
 
 # ACM & Route53

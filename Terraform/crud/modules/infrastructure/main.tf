@@ -24,11 +24,11 @@ resource "random_password" "password" {
 }
 
 resource "aws_secretsmanager_secret" "rds_credentials_master" {
-  name = "${var.environment}-cred-master3"
+  name = "${var.environment}-cred-master"
 }
 
 resource "aws_secretsmanager_secret" "rds_credentials_user" {
-  name = "${var.environment}-cred-user3"
+  name = "${var.environment}-cred-user"
 }
 
 resource "aws_secretsmanager_secret_version" "rds_credentials_master" {
