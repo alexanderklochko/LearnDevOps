@@ -1,0 +1,6 @@
+[filebeats]
+filebeat_1 ansible_host=10.26.0.196
+filebeat_2 ansible_host=10.26.0.134
+filebeat_3 ansible_host=10.26.0.135 
+
+

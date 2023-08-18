@@ -1,0 +1,12 @@
+####filebeat_settings######
+filebeat.inputs:
+- type: log
+  enabled: true
+  paths:
+    - /var/log/*.log
+    - /var/log/messages
+
+output.logstash:
+
+  hosts: ["10.26.0.186:5044"]
+

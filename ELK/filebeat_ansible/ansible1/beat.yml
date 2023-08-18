@@ -1,0 +1,40 @@
+---
+- name: Download, install and configuration filebeat
+  hosts: [filebeats]
+  vars_files: 
+    - vars.yml 
+  become: yes
+
+  tasks:
+
+  - name: Download Filebeat Package RedHat
+    get_url: url={{ filebeat_url }}{{ filebeat_version }}-x86_64.rpm dest=/opt/
+    when: ansible_facts['os_family'] == "RedHat"
+
+  - name: Install FileBeat Yum Package
+    become: yes
+    yum: name="{{ download }}/{{ filebeat_version }}-x86_64.rpm"  state=present
+    when: ansible_facts['os_family'] == "RedHat"
+
+  - name: Download and install  Filebeat Package Debian 
+    apt: deb=https://artifacts.elastic.co/downloads/beats/filebeat/filebeat-8.2.0-amd64.deb
+    when: ansible_facts['os_family'] == "Debian"
+
+  - name: Remove FileBeat YAML File
+    become: yes
+    file: path=/etc/filebeat/filebeat.yml  state=absent
+
+  - name: Copy New FileBeat YAML File 
+    become: yes
+    copy: src={{ source }}/filebeat.yml dest=/etc/filebeat/filebeat.yml
+
+  - name: Enable Filebeat Service
+    become: yes
+    service: name=filebeat state=started enabled=yes
+  
+  - name: Restarted Filebet Service
+    become: yes
+    service: name=filebeat state=restarted
+    when: ansible_facts['os_family'] == "Debian"
+
+...

@@ -1,0 +1,6 @@
+---
+ansible_user: root
+ansible_ssh_pass: p@ssw0rd
+
+...
+
