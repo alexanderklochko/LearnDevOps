@@ -1,7 +1,7 @@
 # General parameters
 aws_region  = "eu-central-1"
 environment = "crud1"
-allowed_ips = "31.129.232.108/30"
+allowed_ips = "31.129.232.52/30"
 
 # Network parameter
 vpc_cidr = "172.16.0.0/16"
@@ -63,10 +63,10 @@ deregistration_delay = 60
 check_grace_period   = 240
 
 # CLOUDWATCH
-period    = 300
+period    = 60
 threshold = 10
 
 # ACM & Route53
-domain_name = "oleksandrklochko.click"
+domain_name = "terraform.oleksandrklochko.click"
 ssl_policy  = "ELBSecurityPolicy-TLS13-1-2-2021-06"
 dns_zoneID  = "Z0791780307CLL6KUZTNH"

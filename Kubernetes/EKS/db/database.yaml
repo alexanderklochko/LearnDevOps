@@ -31,7 +31,7 @@ metadata:
   name: db
   namespace: db
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       env: production-db
@@ -102,15 +102,14 @@ spec:
         volumeMounts:
           - name: mysql-initdb
             mountPath: /docker-entrypoint-initdb.d
-          - name: crud-persistent-storage
+          - name: efs-pv1
             mountPath: "/var/lib/mysql"
-      volumes:
+      volumes: 
         - name: mysql-initdb
           configMap:
             name: mysql-initdb-config      
-        - name: crud-persistent-storage
-          persistentVolumeClaim:
-            claimName: mysql-volumeclaim
+        - name: efs-pv1
+
 
 
 

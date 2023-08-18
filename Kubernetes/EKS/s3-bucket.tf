@@ -1,6 +1,6 @@
 # S3 Buckets
 resource "aws_s3_bucket" "dev-bucket" { # main bucket
-  bucket = "ms-terraform-aws-eks-ajfdbgadjkfbg2383873879hjadccg"
+  bucket = "ms-terraform-aws-eks-ajfdbgadjkfbg2383873879hjadccgtt"
   versioning {
     enabled = true
   }
@@ -26,7 +26,7 @@ resource "aws_s3_bucket_object" "dev-bucket-sub3" { # lb controller bucket
 
 # DynamoDB
 resource "aws_dynamodb_table" "dev-eks-cluster" {
-  name           = "dev-eks-clusterfdsfsdfsdf"
+  name           = "dev-eks-clusterfdsfsdfsdftt"
   read_capacity  = 5
   write_capacity = 5
 
