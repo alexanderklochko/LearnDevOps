@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolume
 metadata:
-  name: efs-pv1
+  name: efs-pv
   namespace: db
 spec:
   capacity:
@@ -13,14 +13,14 @@ spec:
   storageClassName: efs-sc
   csi:
     driver: efs.csi.aws.com
-    volumeHandle: fs-0802626d6428a9c2d
+    volumeHandle: fs-085e49a26148f0b89
 ---
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
-  name: efs-sc1
+  name: efs-sc
 provisioner: efs.csi.aws.com
 parameters:
   provisioningMode: efs-ap
-  fileSystemId: fs-0802626d6428a9c2d
+  fileSystemId: fs-085e49a26148f0b89
   directoryPerms: "777"

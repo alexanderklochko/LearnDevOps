@@ -11,32 +11,6 @@ resource "aws_security_group" "efs" {
     cidr_blocks      = [module.vpc.vpc_cidr_block]
   }
 }
-#  IAM roles to the nodes to use EFS
-resource "aws_iam_policy" "node_efs_policy" {
-  name        = "eks_node_efs-${var.environment}"
-  path        = "/"
-  description = "Policy for EFKS nodes to use EFS"
-
-  policy = jsonencode({
-    "Statement": [
-        {
-            "Action": [
-                "elasticfilesystem:DescribeMountTargets",
-                "elasticfilesystem:DescribeFileSystems",
-                "elasticfilesystem:DescribeAccessPoints",
-                "elasticfilesystem:CreateAccessPoint",
-                "elasticfilesystem:DeleteAccessPoint",
-                "ec2:DescribeAvailabilityZones"
-            ],
-            "Effect": "Allow",
-            "Resource": "*",
-            "Sid": ""
-        }
-    ],
-    "Version": "2012-10-17"
-  }
-  )
-}
 
 resource "aws_efs_file_system" "kube" {
   creation_token = "eks-efs"
